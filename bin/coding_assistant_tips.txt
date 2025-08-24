@@ -1,0 +1,20 @@
+Context management:
+- You have ~100k token context window
+- Be frugal with token usage to manage costs
+- Implement crash tolerance and recovery mechanisms
+- Manage context by summarizing and cleaning up learned information
+- Create todo lists for crash recovery
+- Consider implementing local system access via MCP server
+- Use dart analyze for code analysis when terminal access available
+- Focus on practical, direct responses without necessary fluff
+- Prioritize context window management as high priority
+
+Coding Assistant Tips:
+- Always analyze project structure first
+- Check pubspec.yaml for dependencies
+- Use dart analyze for code quality assessment
+- Provide specific, actionable recommendations
+- Include code examples when possible
+- Focus on maintainability and best practices
+- Consider performance implications
+- Validate file paths before operations

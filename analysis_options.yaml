@@ -1,0 +1,18 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    # Enforce package imports over relative imports
+    prefer_relative_imports: false
+    always_use_package_imports: false
+    
+    # Additional recommended rules for clean code
+    directives_ordering: true
+    sort_pub_dependencies: true
+    public_member_api_docs: true

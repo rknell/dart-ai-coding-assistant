@@ -1,0 +1,48 @@
+# Dart/Flutter specific
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+pubspec.lock
+
+# IDE/Editor specific
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS specific
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# Test related
+test/.test_coverage.dart
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Documentation
+doc/api/
+
+# Temporary files
+*.swp
+*.swo
+*~
+.local-chrome/

@@ -1,0 +1,27 @@
+name: dart_ai_coding_assistant
+description: A dedicated AI coding assistant for Dart development
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  dart_openai_client:
+    path: ../dart-openai-client
+  path: ^1.8.3
+  puppeteer: ^3.19.0
+
+dev_dependencies:
+  lints: ^3.0.0
+  test: ^1.24.0
+
+# MCP server executables
+executables:
+  ai-coding-assistant: ai_coding_assistant
+  context-manager: context_manager
+  dart-dev: dart_dev
+  terminal-command: terminal_command
+  puppeteer-dart: puppeteer_dart
+  test-mcp-reload: test_mcp_hot_reload
+  test-config-mod: test_config_modification

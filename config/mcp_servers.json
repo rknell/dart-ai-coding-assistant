@@ -1,0 +1,49 @@
+{
+    "mcpServers": {
+        "puppeteer": {
+            "command": "dart",
+            "args": [
+                "run",
+                "mcp/mcp_server_puppeteer.dart"
+            ],
+            "env": {},
+            "description": "Puppeteer MCP server for web automation and scraping"
+        },
+        "filesystem": {
+            "command": "dart",
+            "args": [
+                "run",
+                "mcp/mcp_server_filesystem.dart"
+            ],
+            "env": {},
+            "description": "Filesystem MCP server for file operations with DeepSeek API context caching optimization"
+        },
+        "dart": {
+            "command": "dart",
+            "args": [
+                "run",
+                "mcp/mcp_server_dart.dart"
+            ],
+            "env": {},
+            "description": "Dart MCP server for Dart development operations including analysis, fixing, and execution"
+        },
+        "terminal": {
+            "command": "dart",
+            "args": [
+                "run",
+                "mcp/mcp_server_terminal.dart"
+            ],
+            "env": {},
+            "description": "Terminal MCP server for secure local system command execution"
+        },
+        "context-manager": {
+            "command": "dart",
+            "args": [
+                "run",
+                "mcp/mcp_server_context_manager.dart"
+            ],
+            "env": {},
+            "description": "Context Manager MCP server for intelligent context optimization"
+        }
+    }
+}
