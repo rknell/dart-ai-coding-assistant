@@ -3,7 +3,6 @@
 /// Test script to verify MCP server hot reload works correctly
 library;
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_openai_client/dart_openai_client.dart';

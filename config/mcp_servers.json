@@ -36,6 +36,16 @@
             "env": {},
             "description": "Terminal MCP server for secure local system command execution"
         },
+        "lsp": {
+            "command": "dart",
+            "args": [
+                "run",
+                "mcp/mcp_server_lsp.dart"
+            ],
+            "env": {},
+            "description": "LSP MCP server for code quality checking, understanding, and navigation"
+        },
+
         "context-manager": {
             "command": "dart",
             "args": [

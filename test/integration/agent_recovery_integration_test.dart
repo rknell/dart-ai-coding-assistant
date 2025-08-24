@@ -7,9 +7,10 @@ library;
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'package:test/test.dart';
-import 'package:dart_openai_client/dart_openai_client.dart';
+
 import 'package:dart_ai_coding_assistant/mcp_hot_reload.dart';
+import 'package:dart_openai_client/dart_openai_client.dart';
+import 'package:test/test.dart';
 
 /// 🎯 MOCK INFINITE TOOL CALL API: Simulates an AI that always requests tool calls
 class MockInfiniteToolCallApi extends ApiClient {
@@ -109,15 +110,11 @@ void main() {
 
     tearDown(() async {
       // First dispose the hot reload manager to prevent stream controller issues
-      if (hotReloadManager != null) {
-        await hotReloadManager.dispose();
-      }
-
+      await hotReloadManager.dispose();
+    
       // Then shutdown the tool registry
-      if (toolRegistry != null) {
-        await toolRegistry.shutdown();
-      }
-
+      await toolRegistry.shutdown();
+    
       // Clean up temp file
       if (tempConfigFile.existsSync()) {
         await tempConfigFile.delete();

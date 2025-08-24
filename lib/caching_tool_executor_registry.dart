@@ -1,11 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:dart_openai_client/dart_openai_client.dart';
-import 'package:dart_openai_client/src/tool_executor.dart';
-import 'package:dart_openai_client/src/mcp_client.dart';
-import 'package:dart_openai_client/src/mcp_server_manager.dart';
 
-/// 🔧 CACHING TOOL EXECUTOR REGISTRY: Caching version of McpToolExecutorRegistry
+import 'package:dart_ai_coding_assistant/mcp_caching_wrapper.dart';
+import 'package:dart_openai_client/dart_openai_client.dart';
+
 /// 
 /// Extends McpToolExecutorRegistry with caching capabilities for:
 /// - Tool discovery results
@@ -25,7 +22,6 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
   
   /// 🏗️ CONSTRUCTOR: Create new caching registry
   CachingMcpToolExecutorRegistry({required super.mcpConfig});
-
   @override
   Future<void> initialize() async {
     final cacheKey = _generateConfigCacheKey();
@@ -45,7 +41,6 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
     // Create caching wrappers for all MCP clients
     _createCachingWrappers();
   }
-
   @override
   Future<String> executeTool(ToolCall toolCall, {Duration? timeout}) async {
     // Try to find a caching executor first
@@ -57,7 +52,6 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
     // Fall back to standard execution
     return await super.executeTool(toolCall, timeout: timeout);
   }
-
   @override
   List<Tool> getAllTools() {
     final cacheKey = 'all_tools';
@@ -80,7 +74,6 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
     
     return tools;
   }
-
   /// 🧹 CLEAR CACHE: Clear all cached data
   void clearCache() {
     _toolCache.clear();
@@ -95,7 +88,6 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
     
     print('🗑️  All tool registry caches cleared');
   }
-
   /// 📊 GET CACHE STATS: Get cache statistics
   Map<String, dynamic> getCacheStats() {
     var totalToolCacheHits = 0;
@@ -103,8 +95,8 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
     
     for (final wrapper in _cachingWrappers.values) {
       final stats = wrapper.getCacheStats();
-      totalToolCacheHits += stats['cacheHits'] ?? 0;
-      totalToolCacheSize += stats['executionCacheSize'] ?? 0;
+      totalToolCacheHits += (stats['cacheHits'] ?? 0) as int;
+      totalToolCacheSize += (stats['executionCacheSize'] ?? 0) as int;
     }
     
     return {
@@ -116,7 +108,6 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
       'toolCacheTimestamps': _toolCacheTimestamps.length,
     };
   }
-
   /// 🔧 CREATE CACHING WRAPPERS: Create caching wrappers for all MCP clients
   void _createCachingWrappers() {
     // This is a simplified implementation
@@ -128,7 +119,6 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
     // Note: This would need access to the internal MCP clients
     // For now, we'll create wrappers on-demand during tool execution
   }
-
   /// 🔍 FIND CACHING EXECUTOR: Find a caching executor for a tool call
   ToolExecutor? _findCachingExecutor(ToolCall toolCall) {
     // This is a simplified implementation
@@ -156,7 +146,6 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
     
     return null;
   }
-
   /// 🔑 GENERATE CONFIG CACHE KEY: Generate unique key for config
   String _generateConfigCacheKey() {
     try {
@@ -167,7 +156,6 @@ class CachingMcpToolExecutorRegistry extends McpToolExecutorRegistry {
     }
   }
 }
-
 /// 🎯 CACHING TOOL EXECUTOR FACTORY: Factory for creating caching tool executors
 class CachingToolExecutorFactory {
   /// 🔧 CREATE CACHING EXECUTOR: Create appropriate caching executor

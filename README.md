@@ -82,3 +82,13 @@ MIT License - see LICENSE file for details.
 ---
 
 *Part of the Dart AI Development Toolkit*
+## Documentation
+
+- **README.md** - Project overview and usage instructions
+- **DEVELOPER_GUIDE.md** - Comprehensive technical documentation and architecture
+- **docs/linter_resolution_todo.md** - Active linter issue tracking and resolution plan
+- **docs/archive/** - Historical documentation and migration records
+
+---
+
+*Part of the Dart AI Development Toolkit*

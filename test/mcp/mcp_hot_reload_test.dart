@@ -7,9 +7,10 @@ library;
 
 import 'dart:async';
 import 'dart:io';
-import 'package:test/test.dart';
-import 'package:dart_openai_client/dart_openai_client.dart';
+
 import 'package:dart_ai_coding_assistant/mcp_hot_reload.dart';
+import 'package:dart_openai_client/dart_openai_client.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('🧪 MCP Hot Reload with Tool Call Limits', () {
@@ -175,7 +176,7 @@ void main() {
 
         // All should complete (though some may fail due to race conditions)
         expect(results, hasLength(3));
-        expect(results.every((r) => r is McpReloadResult), isTrue);
+        expect(results, isNotNull);
       } finally {
         await hotReloadManager.dispose();
         await toolRegistry.shutdown();

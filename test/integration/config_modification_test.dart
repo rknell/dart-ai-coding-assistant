@@ -47,7 +47,7 @@ void main() async {
     
     print("✅ Config modified with comment");
     print("💤 Waiting 2 seconds for hot reload detection...");
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(Duration(seconds: 2));
     
     // Test 2: Remove the comment
     print("\n📝 Test 2: Removing comment from config");
@@ -57,7 +57,7 @@ void main() async {
     
     print("✅ Config restored to original");
     print("💤 Waiting 2 seconds for hot reload detection...");
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(Duration(seconds: 2));
     
     // Test 3: Add a mock server
     print("\n📝 Test 3: Adding mock server to config");
@@ -79,7 +79,7 @@ void main() async {
     
     print("✅ Mock server added to config");
     print("💤 Waiting 2 seconds for hot reload detection...");
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(Duration(seconds: 2));
     
     // Restore original config
     print("\n🔄 Restoring original config");

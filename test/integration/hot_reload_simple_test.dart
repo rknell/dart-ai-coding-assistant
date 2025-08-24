@@ -3,11 +3,10 @@
 /// Test the hot reload functionality without interactive input
 library;
 
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_openai_client/dart_openai_client.dart';
 import 'package:dart_ai_coding_assistant/mcp_hot_reload.dart';
+import 'package:dart_openai_client/dart_openai_client.dart';
 
 void main() async {
   print("🧪 Testing MCP Hot Reload Basic Functionality");

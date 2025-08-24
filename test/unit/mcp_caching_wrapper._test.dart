@@ -1,8 +1,6 @@
-import 'package:test/test.dart';
-import 'package:dart_openai_client/dart_openai_client.dart';
-import 'package:dart_openai_client/src/mcp_client.dart';
 import 'package:dart_ai_coding_assistant/mcp_caching_wrapper.dart';
-import 'package:dart_openai_client/src/tool.dart';
+import 'package:dart_openai_client/dart_openai_client.dart';
+import 'package:test/test.dart';
 
 /// 🧪 TEST: MCP Caching Wrapper functionality
 /// 
@@ -46,7 +44,7 @@ void main() {
 
     test('should not cache non-cacheable operations', () async {
       // Execute with cacheable=false
-      final result1 = await cachingWrapper.executeToolWithCache(
+      await cachingWrapper.executeToolWithCache(
         'test_tool', 
         '{"param": "value"}',
         cacheable: false,
@@ -55,7 +53,7 @@ void main() {
       expect(mockClient.executeCallCount, 1);
       
       // Execute again with cacheable=false
-      final result2 = await cachingWrapper.executeToolWithCache(
+      await cachingWrapper.executeToolWithCache(
         'test_tool', 
         '{"param": "value"}',
         cacheable: false,
@@ -76,7 +74,7 @@ void main() {
       expect(mockClient.executeCallCount, 1);
       
       // Wait for TTL to expire
-      await Future.delayed(Duration(milliseconds: 150));
+      await Future<void>.delayed(Duration(milliseconds: 150));
       
       // Second execution should miss cache
       await cachingWrapper.executeToolWithCache(

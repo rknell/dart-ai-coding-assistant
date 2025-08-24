@@ -46,3 +46,4 @@ doc/api/
 *.swo
 *~
 .local-chrome/
+*.backup

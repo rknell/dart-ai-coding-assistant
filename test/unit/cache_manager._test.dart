@@ -1,7 +1,8 @@
-import 'package:test/test.dart';
-import 'package:dart_ai_coding_assistant/cache_manager.dart';
 import 'dart:io';
+
+import 'package:dart_ai_coding_assistant/cache_manager.dart';
 import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 /// 🧪 TEST: Cache Manager functionality
 /// 
@@ -54,7 +55,7 @@ void main() {
 
     test('should invalidate cache when file changes', () async {
       // First read
-      final content1 = await cacheManager.readFileWithCache(testFile.path);
+      await cacheManager.readFileWithCache(testFile.path);
       
       // Modify file
       testFile.writeAsStringSync('Modified content');

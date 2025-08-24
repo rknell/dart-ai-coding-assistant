@@ -1,9 +1,9 @@
 import "dart:convert";
 import "dart:io";
 
-import "package:dart_openai_client/dart_openai_client.dart";
-import 'package:dart_ai_coding_assistant/mcp_hot_reload.dart';
 import 'package:dart_ai_coding_assistant/cache_manager.dart';
+import 'package:dart_ai_coding_assistant/mcp_hot_reload.dart';
+import "package:dart_openai_client/dart_openai_client.dart";
 
 /// Multi-line terminal input handler with proper line wrapping and editing support
 String _getUserInput() {
@@ -90,7 +90,7 @@ Future<void> main() async {
   final toolRegistry = McpToolExecutorRegistry(mcpConfig: mcpConfig);
   await toolRegistry.initialize();
   print("✅ MCP servers initialized successfully");
-  
+
   // Initialize cache manager
   print("🗄️  Cache manager initialized");
   print("📊 Cache stats: ${cacheManager.getCacheStats()}");
@@ -140,10 +140,11 @@ Future<void> _performInitialAnalysis(
   try {
     // Get project structure with caching
     try {
-      final projectStructure = await cacheManager.getDirectoryTreeWithCache(".");
+      await cacheManager.getDirectoryTreeWithCache(".");
       print("📁 Project structure cached and analyzed");
     } catch (e) {
-      print("⚠️  Cached structure analysis failed, falling back to direct tool: $e");
+      print(
+          "⚠️  Cached structure analysis failed, falling back to direct tool: $e");
       final structureCall = ToolCall(
         id: 'analyze_structure_${DateTime.now().millisecondsSinceEpoch}',
         type: 'function',
@@ -157,10 +158,11 @@ Future<void> _performInitialAnalysis(
 
     // Get pubspec.yaml for dependencies with caching
     try {
-      final pubspecContent = await cacheManager.readFileWithCache("pubspec.yaml");
+      await cacheManager.readFileWithCache("pubspec.yaml");
       print("📦 Dependencies cached and analyzed");
     } catch (e) {
-      print("⚠️  Cached pubspec analysis failed, falling back to direct tool: $e");
+      print(
+          "⚠️  Cached pubspec analysis failed, falling back to direct tool: $e");
       final pubspecCall = ToolCall(
         id: 'read_pubspec_${DateTime.now().millisecondsSinceEpoch}',
         type: 'function',
@@ -221,7 +223,8 @@ Future<void> _runInteractiveWorkflow(
       print("📊 CACHE STATISTICS:");
       print("   File Cache: ${stats['fileCacheSize']} entries");
       print("   Directory Cache: ${stats['directoryCacheSize']} entries");
-      print("   Project Analysis Cache: ${stats['projectAnalysisCacheSize']} entries");
+      print(
+          "   Project Analysis Cache: ${stats['projectAnalysisCacheSize']} entries");
       print("   Hits: ${stats['hits']}, Misses: ${stats['misses']}");
       print("   Hit Rate: ${(stats['hitRate'] * 100).toStringAsFixed(1)}%");
       print("   Invalidations: ${stats['invalidations']}");
@@ -240,9 +243,11 @@ Future<void> _runInteractiveWorkflow(
       final stats = cacheManager.getCacheStats();
       print("📊 FINAL CACHE STATISTICS:");
       print("   Total Hits: ${stats['hits']}, Misses: ${stats['misses']}");
-      print("   Overall Hit Rate: ${(stats['hitRate'] * 100).toStringAsFixed(1)}%");
-      print("   Estimated API Cost Reduction: ~${(stats['hitRate'] * 30).toStringAsFixed(1)}%");
-      
+      print(
+          "   Overall Hit Rate: ${(stats['hitRate'] * 100).toStringAsFixed(1)}%");
+      print(
+          "   Estimated API Cost Reduction: ~${(stats['hitRate'] * 30).toStringAsFixed(1)}%");
+
       print("Session terminated.");
       break;
     }
@@ -343,6 +348,25 @@ test/
 ├── integration/    # Integration tests for component interaction
 ├── mcp/           # MCP server functionality tests
 └── fixtures/      # Test data and mock objects
+
+
+File naming conventions:
+- test/integration/config_modification_test.dart
+- test/unit/config_modification_test.dart
+- test/mcp/config_modification_test.dart
+- test/fixtures/config_modification_test.dart
+
+
+CONTINUOUS IMPROVEMENT PROTOCOL:
+- When encountering tooling errors, consider what could be improved in the tooling. Log this to docs/TOOLING_IMPROVEMENTS.md
+- When encountering a bug, consider what could be improved in the code. Log this to docs/BUG_FIXES.md
+- When encountering a feature request, consider what could be improved in the code. Log this to docs/FEATURE_REQUESTS.md
+- When encountering a performance issue, consider what could be improved in the code. Log this to docs/PERFORMANCE_ISSUES.md
+- When encountering a security issue, consider what could be improved in the code. Log this to docs/SECURITY_ISSUES.md
+- When encountering a usability issue, consider what could be improved in the code. Log this to docs/USABILITY_ISSUES.md
+- When encountering a documentation issue, consider what could be improved in the code. Log this to docs/DOCUMENTATION_ISSUES.md
+- When encountering a test issue, consider what could be improved in the code. Log this to docs/TEST_ISSUES.md
+- If you run out of tool calls and need to continue, first consider what tools could have resolved your work in a minimum of calls and log them to docs/TOOL_CALL_JUSTIFICATION_SOLUTION.md
 
 Every code change must include corresponding test updates or new test creation.
 Tests are permanent assets that protect against regressions and document expected behavior.
