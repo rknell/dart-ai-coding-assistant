@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "test-server": {
-      "command": "echo",
-      "args": ["test"],
-      "description": "Test server for rapid reload"
-    }
-  }
-}
