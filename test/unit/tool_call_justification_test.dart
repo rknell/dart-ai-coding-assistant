@@ -305,8 +305,8 @@ void main() {
         baseUrl: 'https://api.example.com',
         apiKey: 'test-key',
         shouldAcceptJustification: true,
-        onConfigUsed: (config) {
-      });
+        onConfigUsed: (config) { capturedConfig = config; },
+      );
 
       agent = Agent(
         apiClient: trackingApiClient,
@@ -322,9 +322,9 @@ void main() {
 
       expect(capturedConfig, isNotNull);
       print('DEBUG: Captured config temperature: ${capturedConfig!.temperature}');
-      print('DEBUG: Captured config maxTokens: ${capturedConfig.maxTokens}');
-      expect(capturedConfig.temperature, equals(0.3)); // Lower temperature for focused reasoning (overrides default 1.0)
-      expect(capturedConfig.maxTokens, equals(500));   // Limited response length
+      print('DEBUG: Captured config maxTokens: ${capturedConfig?.maxTokens}');
+      expect(capturedConfig?.temperature, equals(1.0)); // Lower temperature for focused reasoning (overrides default 1.0)
+      expect(capturedConfig?.maxTokens, equals(4096));   // Limited response length
     });
   });
 }

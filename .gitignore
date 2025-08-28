@@ -47,3 +47,6 @@ doc/api/
 *~
 .local-chrome/
 *.backup
+test_config_*.json
+*test*.json
+dart_ai_coding_assistant

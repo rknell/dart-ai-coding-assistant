@@ -16,6 +16,7 @@ void main() {
     
     setUp(() async {
       cacheManager = CacheManager();
+      cacheManager.clearCache(); // Reset cache stats
       
       // Create test directory and file
       testDir = Directory('test_cache_dir');
@@ -39,6 +40,10 @@ void main() {
     });
 
     test('should cache file content reads', () async {
+      final initialStats = cacheManager.getCacheStats();
+      final initialHits = initialStats['hits'] as int;
+      final initialMisses = initialStats['misses'] as int;
+      
       // First read (should miss cache)
       final content1 = await cacheManager.readFileWithCache(testFile.path);
       expect(content1, 'Hello, World!\nLine 2\nLine 3');
@@ -49,11 +54,14 @@ void main() {
       
       // Verify cache stats
       final stats = cacheManager.getCacheStats();
-      expect(stats['hits'], 1);
-      expect(stats['misses'], 1);
+      expect(stats['hits'], initialHits + 1);
+      expect(stats['misses'], initialMisses + 1);
     });
 
     test('should invalidate cache when file changes', () async {
+      final initialStats = cacheManager.getCacheStats();
+      final initialMisses = initialStats['misses'] as int;
+      
       // First read
       await cacheManager.readFileWithCache(testFile.path);
       
@@ -65,10 +73,14 @@ void main() {
       expect(content2, 'Modified content');
       
       final stats = cacheManager.getCacheStats();
-      expect(stats['misses'], 2); // Both should be misses due to modification
+      expect(stats['misses'], initialMisses + 2); // Both should be misses due to modification
     });
 
     test('should cache directory listings', () async {
+      final initialStats = cacheManager.getCacheStats();
+      final initialHits = initialStats['hits'] as int;
+      final initialMisses = initialStats['misses'] as int;
+      
       // First listing (should miss cache)
       final entries1 = await cacheManager.listDirectoryWithCache(testDir.path);
       expect(entries1, contains(testFile.path));
@@ -78,8 +90,8 @@ void main() {
       expect(entries2, entries1);
       
       final stats = cacheManager.getCacheStats();
-      expect(stats['hits'], 1);
-      expect(stats['misses'], 1);
+      expect(stats['hits'], initialHits + 1);
+      expect(stats['misses'], initialMisses + 1);
     });
 
     test('should handle file head reads with caching', () async {
@@ -156,6 +168,10 @@ void main() {
     });
 
     test('should calculate hit rate correctly', () async {
+      final initialStats = cacheManager.getCacheStats();
+      final initialHits = initialStats['hits'] as int;
+      final initialMisses = initialStats['misses'] as int;
+      
       // First read (miss)
       await cacheManager.readFileWithCache(testFile.path);
       
@@ -166,9 +182,14 @@ void main() {
       await cacheManager.readFileWithCache(testFile.path);
       
       final stats = cacheManager.getCacheStats();
-      expect(stats['hits'], 2);
-      expect(stats['misses'], 1);
-      expect(stats['hitRate'], closeTo(0.666, 0.001)); // 2/3 = 0.666...
+      expect(stats['hits'], initialHits + 2);
+      expect(stats['misses'], initialMisses + 1);
+      
+      // Calculate expected hit rate based on the additional operations we just performed
+      final totalHits = initialHits + 2;
+      final totalMisses = initialMisses + 1;
+      final expectedHitRate = totalHits / (totalHits + totalMisses);
+      expect(stats['hitRate'], closeTo(expectedHitRate, 0.001));
     });
   });
 }

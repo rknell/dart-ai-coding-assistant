@@ -1,0 +1,86 @@
+# Test Configuration for dart-ai-coding-assistant
+#
+# This file defines different test categories with their specific configurations
+# to enable fast feedback loops during development while maintaining comprehensive
+# test coverage in CI/CD.
+
+# Fast unit tests - for development feedback (< 10 seconds)
+# These tests should not initialize external systems, MCP servers, or perform I/O
+unit:
+  description: "Fast unit tests for immediate development feedback"
+  max_duration: 10s
+  concurrency: 8
+  includes:
+    - "test/unit/**/*_test.dart"
+  excludes:
+    - "test/unit/*mcp*_test.dart"  # Exclude MCP-related tests
+    - "test/unit/*integration*_test.dart"
+  tags:
+    - "unit"
+  exclude_tags:
+    - "mcp"
+    - "integration" 
+    - "slow"
+  timeout: 5s
+
+# Component tests - isolated component testing with minimal dependencies
+component:
+  description: "Component tests with controlled dependencies"
+  max_duration: 30s
+  concurrency: 4
+  includes:
+    - "test/unit/**/*_test.dart"
+  tags:
+    - "unit"
+    - "component"
+  exclude_tags:
+    - "integration"
+    - "slow"
+  timeout: 10s
+
+# Integration tests - tests that require MCP servers or external systems
+integration:
+  description: "Integration tests with MCP servers and external dependencies"
+  max_duration: 120s
+  concurrency: 2
+  includes:
+    - "test/mcp/**/*_test.dart"
+    - "test/integration/**/*_test.dart" 
+    - "test/unit/*mcp*_test.dart"
+  tags:
+    - "integration"
+    - "mcp"
+  timeout: 30s
+
+# Slow integration tests - comprehensive end-to-end testing
+slow:
+  description: "Comprehensive slow integration tests"
+  max_duration: 300s
+  concurrency: 1
+  includes:
+    - "test/slow_integration/**/*_test.dart"
+  tags:
+    - "slow"
+    - "integration"
+  timeout: 60s
+
+# All tests - for CI/CD comprehensive testing
+all:
+  description: "Complete test suite for CI/CD"
+  max_duration: 600s
+  concurrency: 4
+  includes:
+    - "test/**/*_test.dart"
+  timeout: 30s
+
+# Coverage tests - for generating coverage reports
+coverage:
+  description: "Tests with coverage reporting enabled"
+  includes:
+    - "test/unit/**/*_test.dart"
+    - "test/mcp/**/*_test.dart"
+    - "test/integration/**/*_test.dart"
+  exclude_tags:
+    - "slow"
+  coverage_output: "coverage/"
+  coverage_format: ["html", "lcov"]

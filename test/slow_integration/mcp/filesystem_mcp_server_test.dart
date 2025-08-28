@@ -1,7 +1,7 @@
 import "dart:convert";
 import 'dart:io';
 import 'package:test/test.dart';
-import '../../mcp/mcp_server_filesystem.dart';
+import '../../../mcp/mcp_server_filesystem.dart';
 
 /// 🧪 TEST: Filesystem MCP Server with Caching
 /// 

@@ -2,8 +2,143 @@ import "dart:convert";
 import "dart:io";
 
 import 'package:dart_ai_coding_assistant/cache_manager.dart';
+import 'package:dart_ai_coding_assistant/logging_config.dart';
 import 'package:dart_ai_coding_assistant/mcp_hot_reload.dart';
 import "package:dart_openai_client/dart_openai_client.dart";
+
+/// 🎯 PROJECT ROOT DETECTION: Find the dart-ai-coding-assistant project root
+///
+/// This function determines the project root directory by looking for key project files
+/// and handles execution from any working directory.
+String _findProjectRoot() {
+  // Start from current working directory
+  String currentDir = Directory.current.path;
+
+  // Walk up the directory tree looking for project root indicators
+  while (currentDir != '/' && currentDir != '') {
+    final pubspecFile = File('$currentDir/pubspec.yaml');
+    final mcpConfigFile = File('$currentDir/config/mcp_servers.json');
+    final binDir = Directory('$currentDir/bin');
+    final mcpDir = Directory('$currentDir/mcp');
+
+    // Check if this looks like our project root
+    // Must have ALL required directories and files
+    if (pubspecFile.existsSync() &&
+        mcpConfigFile.existsSync() &&
+        binDir.existsSync() &&
+        mcpDir.existsSync()) {
+      // Additional validation: check if this is actually our project
+      final mainProgram = File('$currentDir/bin/dart_ai_coding_assistant.dart');
+      if (mainProgram.existsSync()) {
+        logInfo("Project root found at: $currentDir", component: "MAIN");
+        return currentDir;
+      }
+    }
+
+    // Move up one directory
+    final parentDir = Directory(currentDir).parent.path;
+    if (parentDir == currentDir) break; // Prevent infinite loop
+    currentDir = parentDir;
+  }
+
+  // If we can't find the project root, try to find it by looking for the specific project name
+  // This handles cases where we're in a parent directory with multiple dart projects
+  final projectName = 'dart-ai-coding-assistant';
+
+  // Look for the project in parent directories, not just the current directory
+  String searchDir = Directory.current.path;
+  while (searchDir != '/' && searchDir != '') {
+    final possibleProjectRoot = '$searchDir/$projectName';
+    final possibleProjectDir = Directory(possibleProjectRoot);
+
+    if (possibleProjectDir.existsSync()) {
+      final pubspecFile = File('$possibleProjectRoot/pubspec.yaml');
+      final mcpConfigFile =
+          File('$possibleProjectRoot/config/mcp_servers.json');
+      final binDir = Directory('$possibleProjectRoot/bin');
+      final mcpDir = Directory('$possibleProjectRoot/mcp');
+      final mainProgram =
+          File('$possibleProjectRoot/bin/dart_ai_coding_assistant.dart');
+
+      if (pubspecFile.existsSync() &&
+          mcpConfigFile.existsSync() &&
+          binDir.existsSync() &&
+          mcpDir.existsSync() &&
+          mainProgram.existsSync()) {
+        logInfo("Project root found at: $possibleProjectRoot",
+            component: "MAIN");
+        return possibleProjectRoot;
+      }
+    }
+
+    // Move up one directory
+    final parentDir = Directory(searchDir).parent.path;
+    if (parentDir == searchDir) break; // Prevent infinite loop
+    searchDir = parentDir;
+  }
+
+  // If we still can't find the project root, this is a critical error
+  // Don't fall back to current directory as it might be wrong
+  throw Exception(
+      "❌ CRITICAL FAILURE: dart-ai-coding-assistant project root not found. "
+      "Please run this program from within the dart-ai-coding-assistant project "
+      "or from a parent directory that contains it. "
+      "Current directory: ${Directory.current.path}");
+}
+
+/// 🔧 MCP PATH RESOLUTION: Convert relative paths to absolute paths
+///
+/// Ensures MCP server paths are resolved relative to the project root,
+/// not the current working directory.
+String _resolveMcpPath(String projectRoot, String relativePath) {
+  if (relativePath.startsWith('/')) {
+    return relativePath; // Already absolute
+  }
+
+  final resolvedPath = '$projectRoot/$relativePath';
+  logDebug("Resolved MCP path: $relativePath -> $resolvedPath",
+      component: "MAIN");
+  return resolvedPath;
+}
+
+/// 🔧 MCP SERVER PATH RESOLUTION: Resolve all MCP server paths and working directories
+///
+/// Creates a new MCP configuration file with all paths resolved to absolute paths
+/// and working directories set to the project root.
+Future<File> _resolveMcpServerPaths(
+    String projectRoot, File originalConfig) async {
+  try {
+    // Read the original configuration
+    final configContent = await originalConfig.readAsString();
+
+    // Instead of trying to modify maps, create a new JSON string with resolved paths
+    String resolvedContent = configContent;
+
+    // Replace working directory references
+    resolvedContent = resolvedContent.replaceAll(
+        '"workingDirectory": "."', '"workingDirectory": "$projectRoot"');
+
+    // Replace MCP server paths
+    resolvedContent = resolvedContent.replaceAll(
+        'mcp/', _resolveMcpPath(projectRoot, "mcp/"));
+
+    // Add environment variable for working directory
+    resolvedContent = resolvedContent.replaceAll(
+        '"env": {}', '"env": {"MCP_WORKING_DIRECTORY": "$projectRoot"}');
+
+    // Create a temporary resolved configuration file
+    final resolvedConfigFile = File('${originalConfig.path}.resolved');
+    await resolvedConfigFile.writeAsString(resolvedContent);
+
+    logInfo("MCP server paths resolved for project root: $projectRoot",
+        component: "MAIN");
+    return resolvedConfigFile;
+  } catch (e) {
+    logWarn("Failed to resolve MCP server paths, using original config: $e",
+        component: "MAIN");
+    return originalConfig;
+  }
+}
 
 /// Multi-line terminal input handler with proper line wrapping and editing support
 String _getUserInput() {
@@ -57,12 +192,24 @@ String _getUserInput() {
 ///
 /// Security: Read-only operations by default, validation of file operations
 Future<void> main() async {
+  // Initialize logging system first
+  logging.initialize();
+
   print("AI CODING ASSISTANT: Code Analysis & Development");
   print("=" * 50);
   print("Professional code analysis and refactoring assistance");
   print("=" * 50);
+  logInfo("Starting AI Coding Assistant", component: "MAIN");
+  logInfo("Log level: ${logging.levelName}", component: "MAIN");
 
-  final tipsFile = File("bin/coding_assistant_tips.txt");
+  // 🎯 PROJECT ROOT DETECTION: Find the project root regardless of execution directory
+  final projectRoot = _findProjectRoot();
+  logInfo("Working from project root: $projectRoot", component: "MAIN");
+  logInfo("Current working directory: ${Directory.current.path}",
+      component: "MAIN");
+
+  final tipsFile =
+      File(_resolveMcpPath(projectRoot, "bin/coding_assistant_tips.txt"));
   String tips = "";
   if (tipsFile.existsSync()) {
     tips = tipsFile.readAsStringSync();
@@ -80,28 +227,37 @@ Future<void> main() async {
     apiKey: apiKey,
   );
 
-  // MCP configuration: Load and initialize MCP servers
-  final mcpConfig = File("config/mcp_servers.json");
+  // MCP configuration: Load and initialize MCP servers with resolved paths
+  final mcpConfigPath = _resolveMcpPath(projectRoot, "config/mcp_servers.json");
+  final mcpConfig = File(mcpConfigPath);
   if (!mcpConfig.existsSync()) {
     throw Exception(
-        "❌ CRITICAL FAILURE: MCP configuration not found at config/mcp_servers.json");
+        "❌ CRITICAL FAILURE: MCP configuration not found at $mcpConfigPath");
   }
 
-  final toolRegistry = McpToolExecutorRegistry(mcpConfig: mcpConfig);
+  // 🔧 MCP PATH RESOLUTION: Update MCP server configuration with absolute paths
+  final resolvedMcpConfig =
+      await _resolveMcpServerPaths(projectRoot, mcpConfig);
+
+  final toolRegistry = McpToolExecutorRegistry(mcpConfig: resolvedMcpConfig);
   await toolRegistry.initialize();
-  print("✅ MCP servers initialized successfully");
+  logInfo("MCP servers initialized successfully", component: "MAIN");
 
   // Initialize cache manager
-  print("🗄️  Cache manager initialized");
-  print("📊 Cache stats: ${cacheManager.getCacheStats()}");
+  logInfo("Cache manager initialized", component: "MAIN");
+  if (logging.isDebugMode) {
+    final stats = cacheManager.getCacheStats();
+    logDebug("Cache stats: $stats", component: "CACHE");
+  }
 
-  // Hot reload manager: Enable MCP server hot reloading
+  // Hot reload manager: Enable MCP server hot reloading with resolved paths
   final hotReloadManager = McpHotReloadManager();
   await hotReloadManager.initialize(
-    configPath: "config/mcp_servers.json",
+    configPath: mcpConfigPath,
     toolRegistry: toolRegistry,
     watchForChanges: true,
   );
+  logInfo("Hot reload manager initialized", component: "MAIN");
 
   // System prompt construction: Build coding context
   final systemPrompt = _buildSystemPrompt(tips);
@@ -113,7 +269,7 @@ Future<void> main() async {
     systemPrompt: systemPrompt,
   )..temperature = 0.8; // Higher temperature for creative technical insights
 
-  print("✅ Coding Assistant initialized and ready");
+  logInfo("Coding Assistant initialized and ready", component: "MAIN");
   print("=" * 50);
 
   // Project analysis: Perform initial codebase assessment with caching
@@ -124,27 +280,28 @@ Future<void> main() async {
     await _runInteractiveWorkflow(agent, hotReloadManager);
   } finally {
     // Cleanup: Ensure proper shutdown
-    print("\nShutting down systems...");
+    logInfo("Shutting down systems...", component: "MAIN");
     await hotReloadManager.dispose();
     await toolRegistry.shutdown();
     await client.close();
-    print("✅ Clean shutdown completed");
+    logInfo("Clean shutdown completed", component: "MAIN");
   }
 }
 
 /// Project analysis: Perform initial codebase assessment
 Future<void> _performInitialAnalysis(
     McpToolExecutorRegistry toolRegistry) async {
-  print("🔍 Performing initial project analysis...");
+  logInfo("Performing initial project analysis...", component: "ANALYSIS");
 
   try {
     // Get project structure with caching
     try {
       await cacheManager.getDirectoryTreeWithCache(".");
-      print("📁 Project structure cached and analyzed");
+      logInfo("Project structure cached and analyzed", component: "ANALYSIS");
     } catch (e) {
-      print(
-          "⚠️  Cached structure analysis failed, falling back to direct tool: $e");
+      logWarn(
+          "Cached structure analysis failed, falling back to direct tool: $e",
+          component: "ANALYSIS");
       final structureCall = ToolCall(
         id: 'analyze_structure_${DateTime.now().millisecondsSinceEpoch}',
         type: 'function',
@@ -159,10 +316,10 @@ Future<void> _performInitialAnalysis(
     // Get pubspec.yaml for dependencies with caching
     try {
       await cacheManager.readFileWithCache("pubspec.yaml");
-      print("📦 Dependencies cached and analyzed");
+      logInfo("Dependencies cached and analyzed", component: "ANALYSIS");
     } catch (e) {
-      print(
-          "⚠️  Cached pubspec analysis failed, falling back to direct tool: $e");
+      logWarn("Cached pubspec analysis failed, falling back to direct tool: $e",
+          component: "ANALYSIS");
       final pubspecCall = ToolCall(
         id: 'read_pubspec_${DateTime.now().millisecondsSinceEpoch}',
         type: 'function',
@@ -174,11 +331,12 @@ Future<void> _performInitialAnalysis(
       await toolRegistry.executeTool(pubspecCall);
     }
 
-    print("✅ Project structure analyzed");
-    print("✅ Dependencies identified");
+    logInfo("Project structure analyzed", component: "ANALYSIS");
+    logInfo("Dependencies identified", component: "ANALYSIS");
   } catch (e) {
-    print("⚠️  Initial analysis limited: $e");
-    print("📝 Proceeding with standard coding assistance...");
+    logWarn("Initial analysis limited: $e", component: "ANALYSIS");
+    logInfo("Proceeding with standard coding assistance...",
+        component: "ANALYSIS");
   }
 }
 
@@ -200,6 +358,11 @@ Future<void> _runInteractiveWorkflow(
   print("  - 'exit', 'quit', or 'done' - End session");
   print(
       "\n💡 TIP: Multi-line input - type your request and press Enter twice to finish.");
+  print("\n🔧 LOGGING CONTROL:");
+  print("  Set environment variables to control output verbosity:");
+  print("  - MCP_DEBUG=true - Show detailed MCP communication");
+  print("  - MCP_LOG_LEVEL=debug|info|warn|error|none");
+  print("  - Default: Clean, minimal output with tool justifications");
   print("=" * 50);
 
   while (true) {
@@ -233,7 +396,7 @@ Future<void> _runInteractiveWorkflow(
 
     if (userInput.toLowerCase() == 'cache clear') {
       cacheManager.clearCache();
-      print("✅ All caches cleared");
+      logInfo("All caches cleared", component: "CACHE");
       continue;
     }
 
@@ -248,7 +411,7 @@ Future<void> _runInteractiveWorkflow(
       print(
           "   Estimated API Cost Reduction: ~${(stats['hitRate'] * 30).toStringAsFixed(1)}%");
 
-      print("Session terminated.");
+      logInfo("Session terminated", component: "MAIN");
       break;
     }
 
@@ -268,7 +431,7 @@ Future<void> _runInteractiveWorkflow(
       print("✅ Analysis completed. Ready for next request.");
     } catch (e) {
       // Error handling: Handle coding assistance failures
-      print("❌ ANALYSIS FAILED: $e");
+      logError("Analysis failed: $e", component: "AGENT");
       print("Try a different approach or file path.");
     }
   }

@@ -24,6 +24,7 @@ import 'package:dart_openai_client/dart_openai_client.dart';
 class FilesystemMCPServer extends BaseMCPServer {
   final bool enableDebugLogging;
   final Duration defaultCacheTTL;
+  final String workingDirectory;
 
   FilesystemMCPServer({
     super.name = 'filesystem',
@@ -31,6 +32,7 @@ class FilesystemMCPServer extends BaseMCPServer {
     super.logger,
     this.enableDebugLogging = false,
     this.defaultCacheTTL = const Duration(minutes: 5),
+    this.workingDirectory = '.',
   });
 
   @override
@@ -331,10 +333,10 @@ class FilesystemMCPServer extends BaseMCPServer {
   Future<MCPToolResult> _handleListAllowedDirectories(
       Map<String, dynamic> arguments) async {
     try {
-      // For now, return the current directory as allowed
-      // In a real implementation, this would come from server configuration
+      // Use the working directory from server configuration for context-aware access
       final allowedDirs = [
-        Directory.current.path,
+        workingDirectory, // Use server's working directory
+        Directory.current.path, // Current execution directory as fallback
         if (Platform.environment.containsKey('HOME'))
           Platform.environment['HOME']!,
       ];
@@ -343,6 +345,8 @@ class FilesystemMCPServer extends BaseMCPServer {
         MCPContent.text(jsonEncode({
           'success': true,
           'allowed_directories': allowedDirs,
+          'server_working_directory': workingDirectory,
+          'current_execution_directory': Directory.current.path,
         })),
       ]);
     } catch (e) {
@@ -395,7 +399,11 @@ class FilesystemMCPServer extends BaseMCPServer {
 
 /// Main entry point
 void main() async {
+  // Get working directory from environment or use current directory
+  final workingDir = Platform.environment['MCP_WORKING_DIRECTORY'] ?? Directory.current.path;
+  
   final server = FilesystemMCPServer(
+    workingDirectory: workingDir,
     logger: (level, message, [data]) {
       if (level == 'error' || level == 'info') {
         final timestamp = DateTime.now().toIso8601String();

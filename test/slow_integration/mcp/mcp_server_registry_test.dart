@@ -1,9 +1,9 @@
 import 'package:test/test.dart';
 
-import '../../mcp/mcp_server_context_manager.dart';
-import '../../mcp/mcp_server_dart.dart';
-import '../../mcp/mcp_server_puppeteer.dart';
-import '../../mcp/mcp_server_terminal.dart';
+import '../../../mcp/mcp_server_context_manager.dart';
+import '../../../mcp/mcp_server_dart.dart';
+import '../../../mcp/mcp_server_puppeteer.dart';
+import '../../../mcp/mcp_server_terminal.dart';
 
 /// 🛡️ REGRESSION: MCP Server Basic RPC Response Test
 ///
